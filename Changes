@@ -1,5 +1,8 @@
 Revision history for CGI-Struct
 
+1.10    2010-11-28
+        Add 'nodot' to avoid interpretting dots as hash level references.
+
 1.00    2010-11-28
         First version, released on an unsuspecting world.
 

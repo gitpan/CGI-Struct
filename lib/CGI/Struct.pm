@@ -9,11 +9,11 @@ CGI::Struct - Build structures from CGI data
 
 =head1 VERSION
 
-Version 1.00
+Version 1.10
 
 =cut
 
-our $VERSION = '1.00';
+our $VERSION = '1.10';
 
 
 =head1 SYNOPSIS
@@ -137,6 +137,8 @@ our @EXPORT = qw(build_cgi_struct);
 
   $struct = build_cgi_struct \%params, \@errs;
 
+  $struct = build_cgi_struct \%params, \@errs, \%conf;
+
 C<build_cgi_struct()> is the only function provided by this module.  It
 takes as an argument a reference to a hash of parameters name keys and
 parameter value values.  It returns a reference to a hash with the fully
@@ -149,13 +151,23 @@ in trying to build the structure.  This should be taken as a debugging
 tool, not a source of friendly-looking warnings to hand to non-technical
 users.
 
+A hash reference may be supplied as a third argument for passing config
+parameters.  The only currently support parameter is 'nodot' which
+disables processing of C<.> as a hash element separator.  There may be
+cases where you want a C<.> as part of a field name, so this lets you
+still use C<{}> and C<[]> structure in those cases.
+
 =cut
 
 sub build_cgi_struct
 {
-	my ($iv, $errs) = @_;
+	my ($iv, $errs, $conf) = @_;
 
 	my (%ret, @errs);
+
+	# Allow disabling '.'
+	my $delims = $delims;
+	$delims =~ s/\.// if($conf && $conf->{nodot});
 
 	# Loop over keys, one at a time.
 	DKEYS: for my $k (keys %$iv)

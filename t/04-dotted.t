@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 18;
 use CGI::Struct;
 
 # Test dotted forms
@@ -51,3 +51,24 @@ for my $k (qw/foo bar/)
 	   "h2{z}.${k}[1] copied right");
 }
 
+
+# Test of turning off dotting
+%inp = (
+	'h.v' => 'dotted hash',
+	'h{x.y}' => 'dotted name',
+);
+$hval = build_cgi_struct \%inp, undef, {nodot => 1};
+
+# Make sure it didn't translate
+is($hval->{'h.v'}, $inp{'h.v'}, 'h.v untranslated with nodot');
+is($hval->{h}{v}, undef, "h{v} didn't sneak in");
+
+# Make sure the name comes through
+ok(grep(/^x\.y$/, keys %{$hval->{h}}), 'x.y name translated');
+
+
+# Double check that it gets an error without nodot
+my @errs;
+$hval = build_cgi_struct \%inp, \@errs;
+ok(grep(/ender for { in x for h{x.y}/, @errs),
+   'without nodot properly failed');
