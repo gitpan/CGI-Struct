@@ -9,11 +9,11 @@ CGI::Struct - Build structures from CGI data
 
 =head1 VERSION
 
-Version 1.10
+Version 1.11
 
 =cut
 
-our $VERSION = '1.10';
+our $VERSION = '1.11';
 
 
 =head1 SYNOPSIS
@@ -30,22 +30,26 @@ structures into I<actual> perl data structures.
 
 CGI::Struct makes no attempt to actually I<read in> the variables from
 the request.  You should be using L<CGI> or some equivalent for that.
-CGI::Struct expects to by handed a reference to a hash containing all the
+CGI::Struct expects to be handed a reference to a hash containing all the
 keys/values you care about.  The common way is to use something like
 C<CGI-E<gt>Vars> or (as the author does)
 C<Plack::Request-E<gt>parameters-E<gt>mixed>.
 
-Anything that gives you a hash with the keys being the request variable
-names, and the values the values.  Any of the major CGIish modules will
-have such a method; consult the documentation for yours if you don't know
-it offhand.
+Whatever you use should give you a hash with the keys being the request
+variable names, and the values the values sent in by the user.  Any of
+the major CGIish modules will have such a method; consult the
+documentation for yours if you don't know it offhand.
 
-Of course, this isn't tied directly to CGI; you could use it to build
-data structures from any other source with similar syntax.  However, it's
-aimed at CGI uses, so it may or may not work for something else.
+Of course, this isn't necessarily tied strictly to CGI; you I<could> use
+it to build data structures from any other source with similar syntax.
+All CGI::Struct does is take one hash (reference) and turn it into
+another hash (reference).  However, it's aimed at CGI uses, so it may or
+may not work for something else.
 
 
 =head1 EXAMPLES
+
+=head2 Basic Usage
 
   <form action="request.cgi">
    Name:    <input type="text" name="uinfo{name}">
@@ -53,8 +57,8 @@ aimed at CGI uses, so it may or may not work for something else.
    Email:   <input type="text" name="uinfo{email}">
   </form>
 
-When filled out and send to request.cgi, which will use something like
-C<CGI-E<gt>Vars> to parse it out into a hash
+When filled out and submitted the data will come in to request.cgi, which
+will use something like C<CGI-E<gt>Vars> to parse it out into a hash
 
   use CGI;
   my $cgi = CGI->new;
@@ -85,17 +89,44 @@ and we wind up with a structure that looks more like
 
 which is much simpler to use in your code.
 
-CGI::Struct also has the ability to build out arrays, and arbitrarily
-deep structures.
+=head2 Arrays
+
+CGI::Struct also has the ability to build out arrays.
+
+ First cousin:  <input type="text" name="cousins[0]">
+ Second cousin: <input type="text" name="cousins[1]">
+ Third cousin:  <input type="text" name="cousins[2]">
+
+Run it through CGI to get the parameters, run through
+L</build_cgi_struct>, and we get
+
+  $struct = {
+      'cousins' => [
+        'Jill',
+        'Joe',
+        'Judy'
+      ]
+  }
+
+Of course, most CGIish modules will roll that up into an array if you
+just call it 'cousins' and have multiple inputs.  But this lets you
+specify the indices.  See also the L</Auto-arrays> section.
+
+=head2 Deeper and deeper
+
+Specifying arrays explicitly is also useful when building arbitrarily
+deep structures, since the array doesn't have to be at the end
 
   <select name="users{bob}{cousins}[5]{firstname}">
 
-After a quick trip through C<build_cgi_struct()>, that'll turn into
-C<$struct{users}{bob}{cousins}[5]{firstname}> just like you'd expect.
+After a quick trip through L</build_cgi_struct>, that'll turn into
+C<$struct-E<gt>{users}{bob}{cousins}[5]{firstname}> just like you'd expect.
+
+=head2 Dotted hashes
 
 Also supported is dot notation for hash keys.  This saves you a few
 keystrokes, and can look neater.  Hashes may be specified with either
-C<{}> or with C<.>.  Arrays can only be written with C<[]>.
+the C<.> or with C<{}>.  Arrays can only be written with C<[]>.
 
 The above C<select> could be written using dots for some or all of the
 hash keys instead, looking a little Javascript-ish
@@ -107,8 +138,42 @@ hash keys instead, looking a little Javascript-ish
 of course, you wouldn't really want to mix-and-match in one field in
 practice; it just looks silly.
 
+There are cases where you may have dots in field names, and you don't
+want this parsing though.  It can be disabled for a run of
+L</build_cgi_struct> by passing a config param in; see the
+L<function doc below|/build_cgi_struct>.
 
-=head1 SUBROUTINES/METHODS
+=head2 Auto-arrays
+
+CGI::Struct also builds 'auto-arrays', which is to say it turns
+parameters ending with an empty C<[]> into arrays and pushes things onto
+them.
+
+  <select multiple="multiple" name="users[]">
+
+turns into
+
+  $struct->{users} = ['lots', 'of', 'choices'];
+
+This may seem unnecessary, given the ability of most CGI modules to
+already build the array just by having multiple C<users> params given.
+Too, L</build_cgi_struct> will only ever see a single key in its input
+hash for any name, since your CGI module will already have condensed it
+one way or another, and hashes can't have multiple keys with the same
+name anyway.
+
+However, there are a few uses for it.  PHP does this, so it makes for an
+easier transition.  Also, it forces an array, so if you only chose one
+entry in the list, L</build_cgi_struct> would still make that element in
+the structure a (single-element) array
+
+  $struct->{users} = ['one choice'];
+
+which makes your code simpler and more robust, since you don't have to
+handle both a scalar and an array in that place.
+
+
+=head1 FUNCTIONS
 
 =cut
 
@@ -148,11 +213,12 @@ in the returned hash.
 An optional array reference can be passed as the second argument, in
 which case the array will be filled in with any warnings or errors found
 in trying to build the structure.  This should be taken as a debugging
-tool, not a source of friendly-looking warnings to hand to non-technical
-users.
+tool for the developer's eyes to parse, not a source of friendly-looking
+warnings to hand to non-technical users or as strongly formatted strings
+for automated error mining.
 
 A hash reference may be supplied as a third argument for passing config
-parameters.  The only currently support parameter is 'nodot' which
+parameters.  The only currently supported parameter is 'nodot' which
 disables processing of C<.> as a hash element separator.  There may be
 cases where you want a C<.> as part of a field name, so this lets you
 still use C<{}> and C<[]> structure in those cases.
@@ -327,9 +393,12 @@ L<CGI>, L<CGI::Simple>, L<CGI::Minimal>, L<Plack>, and many other choices
 for handling transforming a browser's request info a data structure
 suitable for parsing.
 
-L<CGI::State> is somewhat similar to CGI::Struct, but is very closely
-tied to L<CGI> and doesn't have as much flexibility in the structures it
-can build.
+L<CGI::State> is somewhat similar to CGI::Struct, but is extremely
+tightly coupled to L<CGI> and doesn't have as much flexibility in the
+structures it can build.
+
+The structure building done here is a perlish equivalent to the structure
+building PHP does with passed-in parameters.
 
 =head1 AUTHOR
 

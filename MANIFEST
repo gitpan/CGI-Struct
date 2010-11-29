@@ -10,6 +10,7 @@ t/00-pod.t
 t/01-array.t
 t/01-directcopy.t
 t/01-hash.t
+t/01-odd.t
 t/02-arrayofhash.t
 t/02-hashofarray.t
 t/03-multiarray.t
