@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 6;
 use CGI::Struct;
 
 # Test arrays of hashes
@@ -14,8 +14,10 @@ my %inp = (
 	'a[1]{fred}' => 'arr1_fred',
 	'a[1]{wilma}' => 'arr1_wilma',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
 
+is(@errs, 0, "No errors");
 is($hval->{a}[0]{$_}, $inp{"a[0]{$_}"}, "a[0]{$_} copied right")
 		for qw/foo bar baz/;
 is($hval->{a}[1]{$_}, $inp{"a[1]{$_}"}, "a[1]{$_} copied right")

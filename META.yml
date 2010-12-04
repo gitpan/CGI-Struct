@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               CGI-Struct
-version:            1.11
+version:            1.12
 abstract:           Build structures from CGI data
 author:
     - Matthew Fuller <fullermd@over-yonder.net>

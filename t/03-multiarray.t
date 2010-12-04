@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 use CGI::Struct;
 
 # Test multi-level arrays
@@ -15,7 +15,10 @@ my %inp = (
 	'a[1][1]' => 'arr1_1',
 	'a[1][2]' => 'arr1_2',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
+
+is(@errs, 0, "No errors");
 
 for my $l1 (qw/0 1/)
 {

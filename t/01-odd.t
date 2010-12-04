@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 use CGI::Struct;
 
 # Make sure odd characters work
@@ -18,7 +18,10 @@ my %inp = (
 	'h{xy%z}' => 'percent',
 	'h{xy#z}' => 'hash',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
+
+is(@errs, 0, "No errors");
 
 for my $k (keys %inp)
 {

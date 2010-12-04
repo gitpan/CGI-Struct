@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use CGI::Struct;
 
 # Test autoarrays
@@ -17,8 +17,10 @@ my %inp = (
 	# One with only a single element
 	'a2[]' => 'a2val',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
 
+is(@errs, 0, "No errors");
 
 # These two just copy straight
 is_deeply($hval->{a}, $inp{'a[]'}, 'a[] correct');

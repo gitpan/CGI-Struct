@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 use CGI::Struct;
 
 # Test mixed multi-level bits
@@ -40,8 +40,10 @@ my %inp = (
 	# And just make a big ugly mess
 	'a[1]{foo}[7]{bar}{baz}[3]' => 'amess',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
 
+is(@errs, 0, "No errors");
 
 is($hval->{h}{a}[0], $inp{"h{a}[0]"}, "h{a}[0] copied right");
 

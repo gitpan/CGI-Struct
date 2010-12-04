@@ -1,5 +1,11 @@
 Revision history for CGI-Struct
 
+1.12    2010-12-04
+        Minor doc tweaks.
+        Fix test suite on perl 5.6.2.  Code worked fine; just the test
+        was broken.
+        Some additional test improvements.
+
 1.11    2010-11-28
         Improve docs, add some extra tests for safety.  No code changes.
 

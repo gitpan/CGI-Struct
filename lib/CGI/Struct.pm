@@ -9,11 +9,11 @@ CGI::Struct - Build structures from CGI data
 
 =head1 VERSION
 
-Version 1.11
+Version 1.12
 
 =cut
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 
 =head1 SYNOPSIS
@@ -138,10 +138,10 @@ hash keys instead, looking a little Javascript-ish
 of course, you wouldn't really want to mix-and-match in one field in
 practice; it just looks silly.
 
-There are cases where you may have dots in field names, and you don't
-want this parsing though.  It can be disabled for a run of
-L</build_cgi_struct> by passing a config param in; see the
-L<function doc below|/build_cgi_struct>.
+Sometimes, though, you may want to have dots in field names, and you
+wouldn't want this parsing to happen then.  It can be disabled for a run
+of L</build_cgi_struct> by passing a config param in; see the L<function
+doc below|/build_cgi_struct>.
 
 =head2 Auto-arrays
 
@@ -205,7 +205,7 @@ our @EXPORT = qw(build_cgi_struct);
   $struct = build_cgi_struct \%params, \@errs, \%conf;
 
 C<build_cgi_struct()> is the only function provided by this module.  It
-takes as an argument a reference to a hash of parameters name keys and
+takes as an argument a reference to a hash of parameter name keys and
 parameter value values.  It returns a reference to a hash with the fully
 built up structure.  Any keys that can't be figured out are not present
 in the returned hash.
@@ -411,6 +411,13 @@ rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Struct>.  I will be
 notified, and then you'll automatically be notified of progress on your
 bug as I make changes.
+
+=head1 SUPPORTED VERSIONS
+
+CGI::Struct should work on perl 5.6 and later.  It includes a
+comprehensive test suite, so passing that should be an indicator that it
+works.  If that's not the case, I want to hear about it so the testing
+can be improved!
 
 =head1 SUPPORT
 

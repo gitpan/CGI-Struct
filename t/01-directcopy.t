@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use CGI::Struct;
 
 # Test that simple stuff gets properly and directly copied
@@ -14,8 +14,10 @@ my %inp = (
 	'trail]' => 'trailing bracket',
 );
 
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
 
+is(@errs, 0, "No errors");
 is($hval->{foo}, $inp{foo}, "foo copied right");
 is(@{$hval->{fooarr}}, @{$inp{fooarr}}, "fooarr copied right");
 is($hval->{'trail}'}, $inp{'trail}'}, "trail} copied right");

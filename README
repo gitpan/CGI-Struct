@@ -1,7 +1,9 @@
-CGI-Struct
+CGI::Struct
 
 This is a module for building structured data from CGI inputs, in a
 manner reminiscent of how PHP does.
+
+See the CGI::Struct POD for details.
 
 
 INSTALLATION
@@ -12,6 +14,12 @@ To install this module, run the following commands:
 	make
 	make test
 	make install
+
+
+SUPPORTED VERSIONS
+
+CGI::Struct should expected to work on 5.6 and later.
+
 
 SUPPORT AND DOCUMENTATION
 

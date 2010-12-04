@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 use CGI::Struct;
 
 # Test hashes of arrays
@@ -17,7 +17,10 @@ my %inp = (
 	'h{enemies}[2]' => 'bob',
 	'h{enemies}[3]' => 'brenda',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
+
+is(@errs, 0, "No errors");
 
 for my $k (qw/friends enemies/)
 {

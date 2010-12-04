@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More tests => 14;
 use CGI::Struct;
 
 # Test various bad inputs
@@ -72,3 +72,12 @@ ok(grep(/Zero-length name element found in h{foo}.{bar}/, @errs),
 ok(grep(/already have [A-Z]+, expecting [a-z]+ for (1|xyz) in m{xyz}/,
         @errs),
    "Got error for m{xyz}");
+
+
+# Every line but one (the key that creates the mismatched type for that
+# test) should have an entry in the @errs.
+is(@errs, keys(%inp) - 1, "An error for every input");
+
+# We get 3 entries in the output hash; 1 for the mismatched type, and 1
+# each for 'h' and 'a' that get far enough to be created.
+is(keys %$hval, 3, "Only expected litter in the output");

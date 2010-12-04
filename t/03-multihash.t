@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use CGI::Struct;
 
 # Test that multi-level hashes gets built right
@@ -13,7 +13,10 @@ my %inp = (
 	'h{bar}{bill}'  => 'hbar_bill',
 	'h{bar}{ted}'   => 'hbar_ted',
 );
-my $hval = build_cgi_struct \%inp;
+my @errs;
+my $hval = build_cgi_struct \%inp, \@errs;
+
+is(@errs, 0, "No errors");
 
 for my $k (qw/foo bar/)
 {
