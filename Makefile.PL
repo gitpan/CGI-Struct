@@ -12,7 +12,11 @@ WriteMakefile(
       : ()),
     PL_FILES            => {},
     PREREQ_PM => {
+        'Storable'   => 0,
+    },
+    BUILD_REQUIRES => {
         'Test::More' => 0,
+        'Test::Deep' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'CGI-Struct-*' },

@@ -25,6 +25,6 @@ is(@errs, 0, "No errors");
 
 for my $k (keys %inp)
 {
-	(my $ok = $k) =~ s/h{(.*)}/$1/;
+	(my $ok = $k) =~ s/h\{(.*)}/$1/;
 	is($hval->{h}{$ok}, $inp{$k}, "$k copied right");
 }

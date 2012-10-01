@@ -19,4 +19,6 @@ t/04-autoarr.t
 t/04-dotted.t
 t/04-mixed.t
 t/05-bad.t
-META.yml                                 Module meta-data (added by MakeMaker)
+t/05-copies.t
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

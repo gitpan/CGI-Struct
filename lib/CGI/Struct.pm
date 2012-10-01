@@ -9,11 +9,11 @@ CGI::Struct - Build structures from CGI data
 
 =head1 VERSION
 
-Version 1.12
+Version 1.20
 
 =cut
 
-our $VERSION = '1.12';
+our $VERSION = '1.20';
 
 
 =head1 SYNOPSIS
@@ -112,6 +112,14 @@ Of course, most CGIish modules will roll that up into an array if you
 just call it 'cousins' and have multiple inputs.  But this lets you
 specify the indices.  See also the L</Auto-arrays> section.
 
+=head3 NULL delimited multiple values
+
+When using L<CGI>'s C<-E<gt>Vars> and similar, multiple passed values
+will wind up as a C<\0>-delimited string, rather than an array ref.  By
+default, CGI::Struct will split it out into an array ref.  This behavior
+can by disabled by using the C<nullsplit> config param; see the
+L<function doc below|/build_cgi_struct>.
+
 =head2 Deeper and deeper
 
 Specifying arrays explicitly is also useful when building arbitrarily
@@ -192,6 +200,8 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(build_cgi_struct);
 
+use Storable qw(dclone);
+
 
 
 
@@ -218,10 +228,45 @@ warnings to hand to non-technical users or as strongly formatted strings
 for automated error mining.
 
 A hash reference may be supplied as a third argument for passing config
-parameters.  The only currently supported parameter is 'nodot' which
-disables processing of C<.> as a hash element separator.  There may be
-cases where you want a C<.> as part of a field name, so this lets you
-still use C<{}> and C<[]> structure in those cases.
+parameters.  The currently supported parameters are:
+
+=over
+
+=item nodot
+
+This allows you to disable processing of C<.> as a hash element
+separator.  There may be cases where you want a C<.> as part of a field
+name, so this lets you still use C<{}> and C<[]> structure in those
+cases.
+
+The default is B<false> (i.e., I<do> use C<.> as separator).  Pass a true
+value (like C<1>) to B<not> do so.
+
+=item nullsplit
+
+C<CGI-E<gt>Vars> and compatible functions tend to, in hash form, wind up
+with a NULL-delimited list rather than an array ref when passed multiple
+values with the same key.  CGI::Struct will check string values for
+embedded C<\0>'s and, if found, C<split> the string on them and create an
+arrayref.
+
+The C<nullsplit> config param lets you disable this if you want strings
+with embedded C<\0> to pass through unmolested.  Pass a false value (like
+C<0>) to disable the splitting.
+
+=item dclone
+
+By default, CGI::Struct uses L<Storable>'s C<dclone> to do deep copies of
+incoming data structures.  This ensures that whatever changes you might
+make to C<$struct> later on don't change stuff in C<%params> too.  By
+setting dclone to a B<false> value (like C<0>) you can disable this, and
+make it so deeper refs in the data structures point to the same items.
+
+You probably don't want to do this, unless some data is so huge you don't
+want to keep 2 copies around, or you really I<do> want to edit the
+original C<%params> for some reason.
+
+=back
 
 =cut
 
@@ -235,6 +280,14 @@ sub build_cgi_struct
 	my $delims = $delims;
 	$delims =~ s/\.// if($conf && $conf->{nodot});
 
+	# nullsplit defaults on
+	$conf->{nullsplit} = 1 unless exists $conf->{nullsplit};
+
+	# So does deep cloning
+	$conf->{dclone} = 1 unless exists $conf->{dclone};
+	my $dclone = sub { @_ > 1 ? @_ : $_[0] };
+	$dclone = \&dclone if $conf->{dclone};
+
 	# Loop over keys, one at a time.
 	DKEYS: for my $k (keys %$iv)
 	{
@@ -242,7 +295,11 @@ sub build_cgi_struct
 		# to the output and go back around.
 		unless( $k =~ /[$delims]/)
 		{
-			$ret{$k} = $iv->{$k};
+			my $nval = ref $iv->{$k} ? $dclone->($iv->{$k}) : $iv->{$k};
+			$nval = [split /\0/, $nval]
+					if($conf->{nullsplit} && ref($nval) eq ''
+					   && $nval =~ /\0/);
+			$ret{$k} = $nval;
 			next;
 		}
 
@@ -371,10 +428,13 @@ sub build_cgi_struct
 		# Special case: for autoarrays, we make sure the value ends up
 		# being a single-element array rather than a scalar, if it isn't
 		# already an array.
-		if($autoarr && $iv->{$k} && ref($iv->{$k}) ne 'ARRAY')
-		{ $$p = [$iv->{$k}]; }
+		my $nval = ref $iv->{$k} ? $dclone->($iv->{$k}) : $iv->{$k};
+		$nval = [split /\0/, $nval]
+				if($conf->{nullsplit} && ref($nval) eq '' && $nval =~ /\0/);
+		if($autoarr && $nval && ref($nval) ne 'ARRAY')
+		{ $$p = [$nval]; }
 		else
-		{ $$p = $iv->{$k}; }
+		{ $$p = $nval; }
 
 		# And around to the next key
 	}
@@ -396,6 +456,10 @@ suitable for parsing.
 L<CGI::State> is somewhat similar to CGI::Struct, but is extremely
 tightly coupled to L<CGI> and doesn't have as much flexibility in the
 structures it can build.
+
+L<CGI::Expand> also does similar things, but is more closely tied to
+L<CGI> or a near-equivalent.  It tries to DWIM hashes and arrays using
+only a single separator.
 
 The structure building done here is a perlish equivalent to the structure
 building PHP does with passed-in parameters.
@@ -451,7 +515,7 @@ L<http://search.cpan.org/dist/CGI-Struct/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010 Matthew Fuller.
+Copyright 2010-2012 Matthew Fuller.
 
 This software is licensed under the 2-clause BSD license.  See the
 LICENSE file in the distribution for details.

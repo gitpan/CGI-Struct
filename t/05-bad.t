@@ -39,14 +39,14 @@ my @errs;
 my $hval = build_cgi_struct \%inp, \@errs;
 
 # Should have a warning about the mismatches
-ok(grep(/ender for { in foo]/, @errs), "Got error for h{foo]");
+ok(grep(/ender for \{ in foo]/, @errs), "Got error for h{foo]");
 ok(grep(/ender for \[ in 0}/, @errs), "Got error for a[0}");
 
 # And the missing
-ok(grep(/ender for { in bar/, @errs), "Got error for h{bar");
+ok(grep(/ender for \{ in bar/, @errs), "Got error for h{bar");
 
 # Multiple?
-ok(grep(/ender for { in  for h{{{}/, @errs), "Got error for h{{{}");
+ok(grep(/ender for \{ in  for h\{\{\{}/, @errs), "Got error for h{{{}");
 
 # Plus the non-integer keys
 ok(grep(/should be a number, not bar in a\[bar]/, @errs),
@@ -55,21 +55,21 @@ ok(grep(/should be a number, not 0bar in a\[0bar]/, @errs),
    "Got error for a[0bar]");
 
 # Bad starting char
-ok(grep(/unexpected initial char in {xyz/, @errs),
+ok(grep(/unexpected initial char in \{xyz/, @errs),
    "Got error for {xyz");
 
 # No key
-ok(grep(/Zero-length name element found in h{}/, @errs),
+ok(grep(/Zero-length name element found in h\{}/, @errs),
    "Got error for h{}");
 ok(grep(/Zero-length name element found in h./, @errs),
    "Got error for h.");
 ok(grep(/Zero-length name element found in h../, @errs),
    "Got error for h..");
-ok(grep(/Zero-length name element found in h{foo}.{bar}/, @errs),
+ok(grep(/Zero-length name element found in h\{foo}.\{bar}/, @errs),
    "Got error for h{foo}.{bar}");
 
 # This mismatch could come in either order
-ok(grep(/already have [A-Z]+, expecting [a-z]+ for (1|xyz) in m{xyz}/,
+ok(grep(/already have [A-Z]+, expecting [a-z]+ for (1|xyz) in m\{xyz}/,
         @errs),
    "Got error for m{xyz}");
 

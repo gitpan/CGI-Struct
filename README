@@ -18,7 +18,7 @@ To install this module, run the following commands:
 
 SUPPORTED VERSIONS
 
-CGI::Struct should expected to work on 5.6 and later.
+CGI::Struct is expected to work on 5.6 and later.
 
 
 SUPPORT AND DOCUMENTATION
