@@ -1,5 +1,10 @@
 Revision history for CGI-Struct
 
+1.21    2012-11-24
+        Fix test failure that hash randomization causes to happen more
+        often.  Code is fine.
+        Some minor improvements and clarifications in the POD.
+
 1.20    2012-09-30
         Add splitting on \0 in strings to better support CGI->Vars
         handling of multiple values.

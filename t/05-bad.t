@@ -69,7 +69,7 @@ ok(grep(/Zero-length name element found in h\{foo}.\{bar}/, @errs),
    "Got error for h{foo}.{bar}");
 
 # This mismatch could come in either order
-ok(grep(/already have [A-Z]+, expecting [a-z]+ for (1|xyz) in m\{xyz}/,
+ok(grep(/already have [A-Z]+, expecting [a-z]+ for (1|xyz) in m(\[1]|\{xyz})/,
         @errs),
    "Got error for m{xyz}");
 

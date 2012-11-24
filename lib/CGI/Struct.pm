@@ -9,11 +9,11 @@ CGI::Struct - Build structures from CGI data
 
 =head1 VERSION
 
-Version 1.20
+Version 1.21
 
 =cut
 
-our $VERSION = '1.20';
+our $VERSION = '1.21';
 
 
 =head1 SYNOPSIS
@@ -22,6 +22,11 @@ This module allows transforming CGI GET/POST data into intricate data
 structures.  It is reminiscent of PHP's building arrays from form data,
 but with a perl twist.
 
+  use CGI;
+  use CGI::Struct;
+  my $cgi = CGI->new;
+  my %params = $cgi->Vars;
+  my $struct = build_cgi_struct \%params;
 
 =head1 DESCRIPTION
 
@@ -35,10 +40,10 @@ keys/values you care about.  The common way is to use something like
 C<CGI-E<gt>Vars> or (as the author does)
 C<Plack::Request-E<gt>parameters-E<gt>mixed>.
 
-Whatever you use should give you a hash with the keys being the request
-variable names, and the values the values sent in by the user.  Any of
-the major CGIish modules will have such a method; consult the
-documentation for yours if you don't know it offhand.
+Whatever you use should give you a hash mapping the request variable
+names (keys) to the values sent in by the users (values).  Any of the
+major CGIish modules will have such a method; consult the documentation
+for yours if you don't know it offhand.
 
 Of course, this isn't necessarily tied strictly to CGI; you I<could> use
 it to build data structures from any other source with similar syntax.
@@ -110,7 +115,23 @@ L</build_cgi_struct>, and we get
 
 Of course, most CGIish modules will roll that up into an array if you
 just call it 'cousins' and have multiple inputs.  But this lets you
-specify the indices.  See also the L</Auto-arrays> section.
+specify the indices.  For instance, you may want to base the array from 1
+instead of 0:
+
+ First cousin:  <input type="text" name="cousins[1]">
+ Second cousin: <input type="text" name="cousins[2]">
+ Third cousin:  <input type="text" name="cousins[3]">
+
+  $struct = {
+      'cousins' => [
+        undef,
+        'Jill',
+        'Joe',
+        'Judy'
+      ]
+  }
+
+See also the L</Auto-arrays> section.
 
 =head3 NULL delimited multiple values
 
@@ -165,10 +186,10 @@ turns into
 
 This may seem unnecessary, given the ability of most CGI modules to
 already build the array just by having multiple C<users> params given.
-Too, L</build_cgi_struct> will only ever see a single key in its input
-hash for any name, since your CGI module will already have condensed it
-one way or another, and hashes can't have multiple keys with the same
-name anyway.
+Also, since L</build_cgi_struct> only sees the data after your CGI module
+has already parsed it out, it will only ever see a single key in its
+input hash for any name anyway, since hashes can't have multiple keys
+with the same name anyway.
 
 However, there are a few uses for it.  PHP does this, so it makes for an
 easier transition.  Also, it forces an array, so if you only chose one
@@ -177,8 +198,9 @@ the structure a (single-element) array
 
   $struct->{users} = ['one choice'];
 
-which makes your code simpler and more robust, since you don't have to
-handle both a scalar and an array in that place.
+which makes your code a bit simpler, since you don't have to expect both
+a scalar and an array in that place (though of course you should make
+sure it's what you expect for robustness).
 
 
 =head1 FUNCTIONS
